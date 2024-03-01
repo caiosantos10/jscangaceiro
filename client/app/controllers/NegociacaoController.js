@@ -6,15 +6,26 @@ class NegociacaoController {
         this._inputValor = $('#valor');
 
         this._negociacoes = new Bind(new Negociacoes(), new NegociacoesView('#negociacoes'), 'adiciona', 'esvazia');
-        
+
         this._mensagem = new Bind(new Mensagem(), new MensagemView('#mensagensView'), 'texto');
     }
 
     adiciona(event) {
-        event.preventDefault();
-        this._negociacoes.adiciona(this._criaNegociacao());
-        this._mensagem.texto = 'Negociação adicionada com sucesso';
-        this._limpaFormulario();
+        try {
+            event.preventDefault();
+            this._negociacoes.adiciona(this._criaNegociacao());
+            this._mensagem.texto = 'Negociação adicionada com sucesso';
+            this._limpaFormulario();
+        } catch (e) {
+            console.log(e);
+            console.log(e.stack)
+
+            if (e instanceof DataInvalidaException) {
+                this._mensagem.texto = e.message;
+            } else {
+                this._mensagem.texto = "Um erro não esperado ocorreu! Por favor entre em contato com o suporte."
+            }
+        }
     }
 
     apaga() {
