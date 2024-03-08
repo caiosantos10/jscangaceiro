@@ -8,27 +8,8 @@ class NegociacaoController {
         this._negociacoes = new Bind(new Negociacoes(), new NegociacoesView('#negociacoes'), 'adiciona', 'esvazia');
 
         this._mensagem = new Bind(new Mensagem(), new MensagemView('#mensagensView'), 'texto');
-    }
 
-    importaNegociacoes() {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'negociacoes/semana');
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState == 4) {
-                if (xhr.status == 200) {
-                    console.log('Obtendo negociações do Servidor');
-                    JSON.parse(xhr.responseText)
-                        .map(obj => this._negociacoes.adiciona(new Negociacao(new Date(obj.data), obj.quantidade, obj.valor)));
-
-                    this._mensagem.texto = 'Negociações importadas com sucesso!';
-                } else {
-                    console.log(xhr.responseText);
-                    this._mensagem.texto = 'Não foi possível obter as negociações da semana';
-                }
-            }
-        }
-
-        xhr.send();
+        this._service = new NegociacaoService();
     }
 
     adiciona(event) {
@@ -47,6 +28,18 @@ class NegociacaoController {
                 this._mensagem.texto = "Um erro não esperado ocorreu! Por favor entre em contato com o suporte."
             }
         }
+    }
+
+    importaNegociacoes() {
+        this._service.obterNegociacoesDaSemana((err, negociacoes) => {
+            if (err) {
+                this._mensagem.texto = 'Não foi possível obter as negociações da semana.';
+                return;
+            }
+
+            negociacoes.forEach(negociacao => this._negociacoes.adiciona(negociacao));
+            this._mensagem.texto = 'Negocações importadas com sucesso';
+        });
     }
 
     apaga() {
